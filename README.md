@@ -2,6 +2,7 @@
 
 Visualizes GraphML output from yEd. 
 
+![](./Screenshot.png)
 You will need [a (trial) license of yFiles](https://www.yworks.com/downloads) to run the application. Put the `yfiles-23.0.4.tgz` somewhere in the root of the solution or update the `package.json` 
 
 ```json
