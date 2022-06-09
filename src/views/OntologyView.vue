@@ -33,7 +33,7 @@
 
 				<v-spacer></v-spacer>
         <v-btn color="#ffffff" text @click.stop="loadIt" >
-          <v-icon class="appBar-icon">mdi-car</v-icon>
+          <v-icon class="appBar-icon">mdi-file-import</v-icon>
         </v-btn>
 				<v-btn icon @click="toggleLeft()" title="Toggle the left panel">
 					<v-icon>mdi-arrow-collapse-left</v-icon>

@@ -10,6 +10,7 @@ export default new Vuex.Store({
 		waiting: null,
 		searchResults: [],
 		neighbors: null,
+		edgeLabelsVisible: true
 	},
 	mutations: {
 		setSelectedItem(state, item) {
@@ -26,6 +27,9 @@ export default new Vuex.Store({
 		},
 		setNeighbors(state, n) {
 			state.neighbors = n;
+		},
+		setEdgeLabelVisibility(state, n) {
+			state.edgeLabelsVisible = n;
 		},
 	},
 	actions: {},

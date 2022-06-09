@@ -52,7 +52,10 @@
 			</main>
 		</v-main>
 		<v-navigation-drawer v-model="rightDrawer" fixed right temporary clipped>
-		 <h2>Set</h2>
+		<div style="padding: 20px;">
+      <v-checkbox @change="edgeLabelChanged" label="View Edge Labels" v-model="viewEdgeLabels"></v-checkbox>
+    </div>
+
 		</v-navigation-drawer>
 		<v-footer app class="app-footer">
 			<span class="footer-text"></span>
@@ -73,6 +76,7 @@
 		date: string = null;
 		rightDrawer: boolean = false;
 		leftDrawer: boolean = false;
+    viewEdgeLabels: boolean = true;
 		private aboutDialog: boolean = false;
 
 		showAbout() {
@@ -83,8 +87,8 @@
 			this.version = require("../package.json").version;
 			this.date = require("../package.json").date;
 		}
-    loadIt(){
-
+    edgeLabelChanged(checked){
+      this.$store.commit("setEdgeLabelVisibility", checked)
     }
 	}
 </script>

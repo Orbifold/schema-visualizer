@@ -22,6 +22,9 @@
 					<p>
 						<span class="prop-name">Relation:</span><a class="prop-nolink" style="cursor: default"  >{{ relation }}</a>
 					</p>
+          <p>
+						<span class="prop-name">Attributes:</span><a class="prop-nolink" style="cursor: default"  >{{ attributes }}</a>
+					</p>
 				</div>
 
 			</v-sheet>
@@ -52,8 +55,11 @@
 		}
 
 		get relation() {
-			return this.item.tag.text
+			return this.item.tag.text || "None"
 		}
+    get attributes(){
+      return this.item.tag.attributes || [];
+    }
 
 		get itemPresent() {
 			return !_.isNil(this.item);

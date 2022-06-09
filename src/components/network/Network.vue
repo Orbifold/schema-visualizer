@@ -34,10 +34,10 @@ const NODE_MAPPER = "NodeMapper";
 const EDGE_MAPPER = "EdgeMapper";
 const GROUP_MAPPER = "GroupMapper";
 const INFO_MAPPER = "InfoMapper";
+const POSTIT_MAPPER = "PostitMapper";
 
-import {Component, Vue} from "vue-property-decorator";
+import {Component, Vue, Watch} from "vue-property-decorator";
 import {
-  BezierEdgeStyle,
   CircularLayout,
   Class,
   Cursor,
@@ -80,6 +80,36 @@ import {toShortForm} from "@/shared/ontology";
 
 License.value = licenseData;
 Class.ensure(LayoutExecutor);
+
+const mainEdgeLabelModel = new EdgePathLabelModel({
+  autoRotation: true,
+  sideOfEdge: "on-edge"
+
+}).createDefaultParameter();
+const mainEdgeLabelStyle = new DefaultLabelStyle({
+  backgroundStroke: "White",
+  backgroundFill: "White",
+  textFill: "#696969",
+  textSize: 8,
+  wrapping:"word-ellipsis",
+  autoFlip:true,
+  insets: [3, 5, 3, 5]
+});
+const infoLabelStyle = new DefaultLabelStyle({
+  // backgroundStroke: "White",
+  // backgroundFill: "White",
+  textFill: "#fff",
+  textSize: 8,
+  insets: [0, 0, 3, 0]
+});
+const defaultShapeMainLabelStyle = new DefaultLabelStyle({
+  // backgroundStroke: "White",
+  // backgroundFill: "White",
+  textFill: "#fff",
+  textSize: 10,
+  insets: 0
+});
+
 @Component({})
 export default class Network extends Vue implements INetwork {
   graphComponent!: GraphComponent;
@@ -90,6 +120,7 @@ export default class Network extends Vue implements INetwork {
   private edgeMapper: any;
   private groupMapper: any;
   private infoMapper: any;
+  private postitMapper: any;
 
   mounted() {
     this.createGraphComponent();
@@ -103,26 +134,14 @@ export default class Network extends Vue implements INetwork {
       supp.graphMLIOHandler.deserializationPropertyOverrides.set(SerializationProperties.IGNORE_XAML_DESERIALIZATION_ERRORS, true);
       supp.graphMLIOHandler = this.createGraphMLIOHandler();
       await supp.openFile(this.graph, StorageLocation.FILE_SYSTEM);
-      const infoLabelStyle = new DefaultLabelStyle({
-        // backgroundStroke: "White",
-        // backgroundFill: "White",
-        textFill: "#fff",
-        textSize: 8,
-        insets:[0,0,3,0]
-      });
-      const defaultLabelStyle = new DefaultLabelStyle({
-        // backgroundStroke: "White",
-        // backgroundFill: "White",
-        textFill: "#fff",
-        textSize: 10,
-        insets:0
-      });
+
 
       for (const node of this.graph.nodes) {
 
         const blob = this.nodeMapper.get(node);
         const isGroup = this.groupMapper.get(node);
         const isInfo = this.infoMapper.get(node);
+        const isPostit = this.postitMapper.get(node);
 
         node.tag = blob;
         // if (blob.isGroup) {
@@ -135,16 +154,17 @@ export default class Network extends Vue implements INetwork {
         // }
         const r = Rect.from(blob);
         this.graph.setNodeLayout(node, r);
-        if(isGroup==="true"){
-          this.graph.setStyle(node, new TemplateNodeStyle("groupTemplate"))
-        }
-        else if(isInfo ==="true"){
-          this.graph.setStyle(node, new TemplateNodeStyle("infoTemplate"))
+        if (isGroup === "true") {
+          this.graph.setStyle(node, new TemplateNodeStyle("groupTemplate"));
+        } else if (isInfo === "true") {
+          this.graph.setStyle(node, new TemplateNodeStyle("infoTemplate"));
           this.graph.addLabel(node, blob.text || "None", InteriorLabelModel.SOUTH, infoLabelStyle);
-        }
-        else{
-          const label = this.graph.addLabel(node, blob.text || "None", InteriorLabelModel.CENTER, defaultLabelStyle);
-          this.graph.setStyle(node, new TemplateNodeStyle("defaultTemplate"))
+        } else if (isPostit === "true") {
+          this.graph.setStyle(node, new TemplateNodeStyle("postitTemplate"));
+          this.graph.addLabel(node, blob.text || "None", InteriorLabelModel.CENTER, infoLabelStyle);
+        } else {
+          const label = this.graph.addLabel(node, blob.text || "None", InteriorLabelModel.CENTER, defaultShapeMainLabelStyle);
+          this.graph.setStyle(node, new TemplateNodeStyle("defaultTemplate"));
         }
       }
       // for (const node of this.graph.nodes) {
@@ -152,23 +172,12 @@ export default class Network extends Vue implements INetwork {
       //     this.graph.adjustGroupNodeLayout(node);
       //   }
       // }
-      const mainLabelModel = new EdgePathLabelModel({
-        autoRotation: true,
-        sideOfEdge:"on-edge"
 
-      }).createDefaultParameter();
-      const mainLabelStyle = new DefaultLabelStyle({
-        backgroundStroke: "White",
-        backgroundFill: "White",
-        textFill: "#696969",
-        textSize: 8,
-        insets: [3, 5, 3, 5]
-      });
       for (const edge of this.graph.edges) {
         const blob = this.edgeMapper.get(edge);
         edge.tag = blob;
         if (blob !== null) {
-          this.graph.addLabel(edge, blob?.text || "", mainLabelModel, mainLabelStyle);
+          this.graph.addLabel(edge, blob?.text || "", mainEdgeLabelModel, mainEdgeLabelStyle);
           if (blob.bends.length > 0) {
             blob.bends.forEach(p => {
               this.graph.addBend(edge, new Point(p[0], p[1]));
@@ -249,6 +258,14 @@ export default class Network extends Vue implements INetwork {
         e.result = "false";
       }
     });
+    graphMLIOHandler.addInputMapper(INode.$class, YObject.$class, (element) => GraphMLIOHandler.matchesName(element, "isPostit"), this.postitMapper, (sender, e) => {
+      try {
+        e.result = e.xmlNode.textContent.toString();
+      } catch (exception) {
+        console.error(exception);
+        e.result = "false";
+      }
+    });
 
     graphMLIOHandler.addInputMapper(IEdge.$class, YObject.$class, (element) => true, this.edgeMapper, (sender, e) => {
       try {
@@ -310,7 +327,10 @@ export default class Network extends Vue implements INetwork {
     this.initializeInputMode();
     this.initializePopups();
     this.initGraphThumbnail();
+    this.initMappers();
+  }
 
+  private initMappers() {
     this.nodeMapper = this.graph.mapperRegistry.createMapper(
         INode.$class,
         YObject.$class,
@@ -331,32 +351,22 @@ export default class Network extends Vue implements INetwork {
         YObject.$class,
         INFO_MAPPER
     );
-    // TemplateNodeStyle.CONVERTERS.linebreakconverter = (value, firstline) => {
-    //   if (typeof value === 'string') {
-    //     let copy = value;
-    //     while (copy.length > 20 && copy.indexOf(' ') > -1) {
-    //       copy = copy.substring(0, copy.lastIndexOf(' '));
-    //     }
-    //     if (firstline === 'true') {
-    //       return copy;
-    //     }
-    //     return value.substring(copy.length);
-    //   }
-    //   return '';
-    // };
+    this.postitMapper = this.graph.mapperRegistry.createMapper(
+        INode.$class,
+        YObject.$class,
+        POSTIT_MAPPER
+    );
+
   }
 
   private initGraphStyles() {
     this.graphComponent.fitContentViewMargins = new Insets(50);
     this.graphComponent.graph.nodeDefaults.size = new Size(50, 50);
-    // this.graphComponent.graph.nodeDefaults.style = new TemplateNodeStyle("classTemplate");
-    // this.graphComponent.graph.edgeDefaults.style = new BezierEdgeStyle({
-    //   stroke: Stroke.WHITE_SMOKE,
-    //   targetArrow: "white medium triangle"
-    // });
+
     this.graphComponent.graph.edgeDefaults.style = new PolylineEdgeStyle({
       stroke: Stroke.WHITE_SMOKE,
       targetArrow: "white medium triangle",
+      sourceArrow:"white medium circle",
       smoothingLength: 10
     });
     this.graphComponent.verticalScrollBarPolicy = ScrollBarVisibility.NEVER;
@@ -577,7 +587,9 @@ export default class Network extends Vue implements INetwork {
       return "";
     }
   }
-
+  /**
+   * Parses the given XML node for extra data.
+   */
   private handleNode(xNode: Node) {
     let childNode: any;
     let blob = {
@@ -631,6 +643,9 @@ export default class Network extends Vue implements INetwork {
     return blob;
   }
 
+  /**
+   * Parses the given XML edge for extra data.
+   */
   private handleEdge(xNode: Node) {
     const blob = {
       s: null,
@@ -673,6 +688,29 @@ export default class Network extends Vue implements INetwork {
       }
     }
     return blob;
+  }
+
+  get edgeLabelsVisible() {
+    return this.$store.state.edgeLabelsVisible;
+  }
+
+  @Watch("edgeLabelsVisible")
+  edgeLabelVisible(tf) {
+    if (tf) {
+      for (const edge of this.graph.edges) {
+        const blob = this.edgeMapper.get(edge);
+        edge.tag = blob;
+        if (blob !== null) {
+          this.graph.addLabel(edge, blob?.text || "", mainEdgeLabelModel, mainEdgeLabelStyle);
+        }
+      }
+    } else {
+      for (const edge of this.graph.edges) {
+        edge.labels.toArray().forEach(l => {
+          this.graph.remove(l);
+        });
+      }
+    }
   }
 }
 </script>
