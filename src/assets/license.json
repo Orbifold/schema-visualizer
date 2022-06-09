@@ -1,0 +1,19 @@
+{
+  "company": "",
+  "date": "",
+  "distribution": true,
+  "domains": [
+    "*"
+  ],
+  "fileSystemAllowed": true,
+  "licensefileversion": "1.1",
+  "localhost": true,
+  "oobAllowed": true,
+  "package": "complete",
+  "product": "yFiles for HTML",
+  "projectname": "",
+  "subscription": "",
+  "type": "project",
+  "version": "2.2",
+  "key": ""
+ }

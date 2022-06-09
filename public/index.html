@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>orbifold.png">
+    <title>Schema Visualization</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <style>
+      html, body, #graph {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        background-color: #343a408f;
+      }
+
+      .popupContent {
+        position: absolute;
+        display: none; /* during runtime, the display value is overridden by class HTMLPopupSupport */
+        border: 2px solid #568fbd;
+        border-radius: 6px;
+        padding: 15px 15px 25px 15px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, .97);
+        opacity: 0; /* will be faded in */
+        transition: opacity 0.2s ease-in;
+        min-width: 300px;
+        font-size: 12px
+      }
+
+      .popupContent.popupContentClone {
+        transition: opacity 0.2s ease-out;
+      }
+
+
+      .popupContentRight {
+        position: relative;
+        float: left;
+        top: 10px;
+        width: 270px;
+        height: 100%;
+        display: inline-block;
+      }
+
+      .popup-link {
+        text-decoration: none;
+        color: black;
+
+      }
+
+
+      .yfiles-node-highlight-template,
+      .yfiles-edge-highlight-template,
+      .yfiles-label-highlight-template,
+      .yfiles-port-highlight-template {
+        stroke: #ff9a00;
+        stroke-linejoin: round;
+        stroke-dasharray: none;
+        stroke-width: 4;
+      }
+      .overview-container{
+        display: none;
+      }
+      #overviewComponent  {
+        height: 250px;
+        position: absolute;
+        width: 250px;
+        z-index: 250;
+        background-color: #343a40;
+        overflow: hidden;
+        right: 15px;
+      }
+      .prop-link {
+        color: dimgrey;
+        font-size: smaller;
+        overflow-wrap: break-spaces;
+      }
+
+      .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .section-title {
+        margin: 10px 0;
+        font-weight: 600;
+        color: steelblue;
+      }
+
+      @media (max-width: 576px) {
+        .modal-dialog.modal-dialog-slideout {
+          width: 80%
+        }
+      }
+
+      .modal-dialog-slideout {
+        min-height: 100%;
+        margin: 0 auto 0 0;
+        background: #fff;
+      }
+
+      .modal.fade .modal-dialog.modal-dialog-slideout {
+        -webkit-transform: translate(-100%, 0);
+        transform: translate(-100%, 0);
+      }
+
+      .modal.fade.show .modal-dialog.modal-dialog-slideout {
+        -webkit-transform: translate(0, 0);
+        transform: translate(0, 0);
+        flex-flow: column;
+      }
+
+      .modal-dialog-slideout .modal-content {
+        border: 0;
+      }
+
+
+
+
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+
+    <script type="text/yfiles-template">
+      <g id="groupTemplate">
+          <rect fill='rgba(255,255,255,0.1)' stroke='white' rx='5' ry='5' width='{TemplateBinding width}' height='{TemplateBinding height}'></rect>
+          <text transform="translate(5 -5)" data-content="{Binding text}"  style='font-size:15px; fill:#fff;'></text>
+      </g>
+      <g id="infoTemplate" transform="translate(0 15)">
+          <rect  fill='rgba(125,198,255,0.24)' stroke-dasharray="2 2" stroke='white' rx='5' ry='5' width='{TemplateBinding width}' height='{TemplateBinding height}'></rect>
+<!--          <text transform="translate(5 5)" data-content="{Binding text, Converter=TextWrapConverter, Parameter=100 150; 12px sans-serif; character-ellipsis; white}"  style='font-size:12px; fill:#fff;'></text>-->
+      </g>
+      <g id="defaultTemplate"  >
+          <rect  fill='rgba(76,185,51,0.7)'  stroke='white' rx='2' ry='2' width='{TemplateBinding width}' height='{TemplateBinding height}'></rect>
+/*          <text transform="translate(5 5)" data-content="{Binding text, Converter=TextWrapConverter, Parameter=100 150; 12px sans-serif; character-ellipsis; white}"  style='font-size:12px; fill:rgba(76,185,51,0.51);'></text>*/
+      </g>
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+time npm run build
